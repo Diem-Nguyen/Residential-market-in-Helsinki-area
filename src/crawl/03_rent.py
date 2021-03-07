@@ -24,21 +24,22 @@ class RentSpider(scrapy.Spider):
     # find rent where transaction prices are available
     postcode_list = df['postcode'].unique() 
     start_urls = [
-       f"https://asuntojen.hintatiedot.fi/haku/vuokratiedot?c=&ps={postcode}&renderType=renderTypeTable" for postcode in \
-        postcode_list
+       f"https://asuntojen.hintatiedot.fi/haku/vuokratiedot?c=&ps={postcode}&renderType=renderTypeTable" for postcode in postcode_list
     ]
 
     def parse(self, response):
-        rows =  response.xpath('//*[@id="mainTable"]/tbody[2]/tr')
-        for row in rows[1:]:
-            yield {
-                'postcode': response.xpath(' /html/body/div/div[4]/table/tbody[2]/tr[1]/td/strong/text()').get(),
-                'apartment_type' : row.xpath('td[1]/text()').get(),
-                'ARA_rental' : row.xpath('td[2]/text()').get(),
-                'nonsub_old' : row.xpath('td[3]/text()').get(),
-                'nonsub_new' : row.xpath('td[4]/text()').get()            
-            }
-            
+        for i in range(2, 7):
+            rows =  response.xpath(f'//*[@id="mainTable"]/tbody/tr[{i}]')      
+            for row in rows:
+                yield {
+                    'postcode': response.xpath(' /html/body/div/div[4]/table/tbody/tr[1]/td/strong/text()').get(),
+                    'apartment_type' : row.xpath('td[1]/text()').get(),
+                    'ARA_rental' : row.xpath('td[2]/text()').get(),
+                    'nonsub_old' : row.xpath('td[3]/text()').get(),
+                    'nonsub_new' : row.xpath('td[4]/text()').get()            
+                }
+
+#//*[@id="mainTable"]/tbody/tr[3]
 if __name__ == "__main__":
     start_time = time.time()
     process = CrawlerProcess({
